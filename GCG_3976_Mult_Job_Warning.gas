@@ -1,0 +1,67 @@
+Program.Sub.ScreenSU.Start
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'07/14/14
+'Coded by SFF
+'quote 5859
+'attach to hooks 15934,15951 gui start job hooks, Prompt user when trying to login to multiple jobs if they want to continue or not.
+
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+
+V.Local.sError.Declare(String)
+V.Local.sRet.Declare(String)
+V.Local.sUser.Declare(String)
+V.Local.sSql.Declare(String)
+
+F.ODBC.Connection!conX.OpenConnection(V.Ambient.PDSN,V.Ambient.PUser,V.Ambient.PPass)
+
+V.Local.sUser.Set(V.Passed.009993)
+F.Intrinsic.String.Concat("select employee from v_jobs_in_process_g where employee = '",V.Local.sUser,"'",V.Local.sSql)
+F.ODBC.Connection!conX.OpenRecordsetRO("rst",V.Local.sSql)
+
+F.Intrinsic.Control.If(V.ODBC.conX!rst.EOF,<>,True)
+	F.Intrinsic.UI.Msgbox("You are attempting to punch in to more than one job. Are you sure you want to proceed?","Attention: Multiple Jobs",4,V.Local.sRet)
+	F.Intrinsic.Control.If(V.Local.sRet,=,"7")
+	
+		F.ODBC.conX!rst.Close
+		V.Passed.777777.Set(1)
+	F.Intrinsic.Control.Else
+		F.ODBC.conX!rst.Close
+		
+		F.Intrinsic.Control.End
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.ODBC.conX!rst.Close
+
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndIf
+		
+	
+
+F.Intrinsic.Control.ExitSub
+
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_3976_Mult_Job_Warning.gas",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+Function.Intrinsic.Control.EndIf
+
+
+Program.Sub.Main.End
+
+Program.Sub.Comments.Start
+${$0$}$GCG_Mult_Job_Warning$}$SFF$}$7/11/2014
+${$1$}$$}$$}$1$}$15934$}$OLS005-PB-START-JOB-PRE-HOOK(GUI START JOB BUTTON)$}$5/10/2016 1:52:03 PM$}$(Program: OLG002; Screen: OLS005)
+
+${$1$}$$}$$}$0$}$15951$}$Pre-Start Job Hook$}$5/10/2016 1:51:44 PM$}$(Program: OLG002; Screen: OLS007)
+
+${$3$}$0$}$$}$-1$}$-1$}$$}$1/1/1900$}$Prompts user with warning about clocking into multiple jobs and asks if they want to continue or not, if yes then continue, if no, then override log in attempt to job
+Program.Sub.Comments.End
+
